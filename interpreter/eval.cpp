@@ -718,48 +718,12 @@ Value Interpreter::eval_BinaryExpr(const BinaryExpr* bin) {
                 ::BigInt lb = l.is_bigint() ? std::get<::BigInt>(l.data) : ::BigInt(l.as_number());
                 ::BigInt rb = r.is_bigint() ? std::get<::BigInt>(r.data) : ::BigInt(r.as_number());
 
-                // 使用字符串比较来判断大小（这是一个简化的实现）
-                std::string ls = lb.to_string();
-                std::string rs = rb.to_string();
-
-                if (bin->op == "==") return Value(ls == rs);
-                if (bin->op == "!=") return Value(ls != rs);
-
-                // 对于大小比较，需要考虑符号和长度
-                bool lb_neg = ls[0] == '-';
-                bool rb_neg = rs[0] == '-';
-
-                if (lb_neg && !rb_neg) {
-                    // 左负右正
-                    if (bin->op == "<") return Value(true);
-                    if (bin->op == "<=") return Value(true);
-                    if (bin->op == ">") return Value(false);
-                    if (bin->op == ">=") return Value(false);
-                } else if (!lb_neg && rb_neg) {
-                    // 左正右负
-                    if (bin->op == "<") return Value(false);
-                    if (bin->op == "<=") return Value(false);
-                    if (bin->op == ">") return Value(true);
-                    if (bin->op == ">=") return Value(true);
-                } else {
-                    // 同号比较：比较绝对值的长度和字典序
-                    std::string labs = lb_neg ? ls.substr(1) : ls;
-                    std::string rabs = rb_neg ? rs.substr(1) : rs;
-
-                    bool abs_less;
-                    if (labs.length() != rabs.length()) {
-                        abs_less = labs.length() < rabs.length();
-                    } else {
-                        abs_less = labs < rabs;
-                    }
-
-                    bool result_less = lb_neg ? !abs_less : abs_less;
-
-                    if (bin->op == "<") return Value(result_less);
-                    if (bin->op == "<=") return Value(result_less || ls == rs);
-                    if (bin->op == ">") return Value(!result_less && ls != rs);
-                    if (bin->op == ">=") return Value(!result_less);
-                }
+                if (bin->op == "==") return Value(lb == rb);
+                if (bin->op == "!=") return Value(lb != rb);
+                if (bin->op == "<") return Value(lb < rb);
+                if (bin->op == "<=") return Value(lb <= rb);
+                if (bin->op == ">") return Value(lb > rb);
+                if (bin->op == ">=") return Value(lb >= rb);
             } else {
                 double ld = l.as_number();
                 double rd = r.as_number();
